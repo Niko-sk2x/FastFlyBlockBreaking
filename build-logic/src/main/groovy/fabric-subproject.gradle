@@ -1,0 +1,53 @@
+plugins {
+    id 'net.fabricmc.fabric-loom'
+}
+
+def final MC_VERSION = name.toString().tokenize('_').last()
+def final MC_VERSION_CATEGORY = parent.name.toString().tokenize('_').last()
+def final JAVA_VERSION = property("${MC_VERSION_CATEGORY}_java_version").toString()
+
+getLayout().buildDirectory = "build_${MC_VERSION}"
+
+logger.lifecycle("Initializing project ${project.path} for ${MC_VERSION} with java version ${JAVA_VERSION}")
+
+loom {
+    mods {
+        "${modid}" {
+            sourceSet sourceSets.main
+        }
+    }
+    runs {
+        client {
+            name = "Fabric Client ${MC_VERSION}"
+            generateRunConfig = true
+        }
+    }
+}
+
+java {
+    withSourcesJar()
+    toolchain.languageVersion = JavaLanguageVersion.of(JAVA_VERSION)
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:$MC_VERSION"
+    implementation "net.fabricmc:fabric-loader:$fabric_loader_version"
+    implementation "net.fabricmc.fabric-api:fabric-api:${property("${MC_VERSION}_fabric_api")}"
+}
+
+processResources {
+    inputs.property "project_version", project_version
+    inputs.property "modid", modid
+    inputs.property "fabric_loader_version", fabric_loader_version
+    inputs.property "${MC_VERSION}_java_version", JAVA_VERSION
+
+    filesMatching("fabric.mod.json") {
+        expand(
+                "version": project_version,
+                "modid": modid,
+                "fabric_loader_version": fabric_loader_version,
+                "mc_version": MC_VERSION,
+                "java_version": JAVA_VERSION
+        )
+    }
+}

@@ -1,0 +1,4 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+    id 'fabric-subproject'
+}

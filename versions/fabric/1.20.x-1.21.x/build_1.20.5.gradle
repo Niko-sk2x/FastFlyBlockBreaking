@@ -1,0 +1,4 @@
+plugins {
+    id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+    id 'fabric-remap-subproject'
+}

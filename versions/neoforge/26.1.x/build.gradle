@@ -1,0 +1,80 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.141'
+    id 'idea'
+}
+
+project.subprojects {
+    apply(plugin: 'java-library')
+    apply(plugin: 'net.neoforged.moddev')
+    apply(plugin: 'idea')
+
+    def final MC_VERSION = name.toString().tokenize('_').last()
+    def final MC_VERSION_CATEGORY = parent.name.toString().tokenize('_').last()
+    def final JAVA_VERSION = property("${MC_VERSION_CATEGORY}_java_version").toString()
+
+    getLayout().buildDirectory = "build/${MC_VERSION}"
+
+    logger.lifecycle("Initializing project ${project.path} for ${MC_VERSION} with java version ${JAVA_VERSION}")
+
+    version = project_version
+    group = maven_group
+
+    base.archivesName = modid
+    java.toolchain.languageVersion = JavaLanguageVersion.of(JAVA_VERSION)
+
+    neoForge {
+        version = property("${MC_VERSION}_neo")
+        runs {
+            client {
+                client()
+            }
+            server {
+                server()
+            }
+            configureEach {
+                systemProperty 'forge.logging.markers', 'SCAN'
+                logLevel = org.slf4j.event.Level.DEBUG
+            }
+        }
+        mods {
+            "${modid}" {
+                sourceSet(sourceSets.main)
+            }
+        }
+    }
+
+    configurations {
+        runtimeClasspath.extendsFrom localRuntime
+    }
+
+    // This block of code expands all declared replace properties in the specified resource targets.
+    // A missing property will result in an error. Properties are expanded using ${} Groovy notation.
+    var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+        var replaceProperties = [
+                minecraft_version      : MC_VERSION,
+                //minecraft_version_range: minecraft_version_range,
+                neo_version            : neoForge.version,
+                mod_id                 : modid,
+                mod_name               : modid,
+                mod_license            : "MIT",
+                mod_version            : version,
+        ]
+        inputs.properties replaceProperties
+        expand replaceProperties
+    }
+
+    sourceSets.main.resources.srcDir generateModMetadata
+    neoForge.ideSyncTask generateModMetadata
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    }
+
+    idea {
+        module {
+            downloadSources = true
+            downloadJavadoc = true
+        }
+    }
+}

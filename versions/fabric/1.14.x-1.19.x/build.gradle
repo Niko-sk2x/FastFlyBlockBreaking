@@ -4,7 +4,7 @@ import java.security.MessageDigest
 // note: strongly coupling these subprojects with the base project is fine
 // they use the exact same same toolchain and we disable parallel builds
 plugins {
-    id 'net.fabricmc.fabric-loom-remap' apply false
+    id 'net.fabricmc.fabric-loom-remap' version "${loom_version}" apply false
 }
 
 tasks.register("compareJars") {
@@ -51,7 +51,7 @@ project.subprojects {
     def final MC_VERSION_CATEGORY = parent.name.toString().tokenize('_').last()
     def final JAVA_VERSION = property("${MC_VERSION_CATEGORY}_java_version").toString()
 
-    getLayout().buildDirectory = "build/${MC_VERSION}"
+    getLayout().buildDirectory = "build_${MC_VERSION}"
 
     logger.lifecycle("Initializing project ${project.path} for ${MC_VERSION} with java version ${JAVA_VERSION}")
 
