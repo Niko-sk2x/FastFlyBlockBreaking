@@ -1,0 +1,100 @@
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+
+// note: strongly coupling these subprojects with the base project is fine
+// they use the exact same same toolchain and we disable parallel builds
+plugins {
+    id 'net.fabricmc.fabric-loom-remap' apply false
+}
+
+tasks.register("compareJars") {
+    dependsOn subprojects.build
+
+    doLast {
+        def jars = subprojects.collect {
+            it.tasks.named("remapJar").get().archiveFile.get().asFile
+        }
+
+        println("Comparing ${jars.size()} jars")
+        def hashes = new HashSet<String>()
+        jars.each {
+            def sorted = new TreeMap<String, byte[]>()
+            def tree = zipTree(it)
+            tree.visit (FileVisitDetails fvd) -> {
+                if (!fvd.isDirectory() && fvd.name.endsWith('.class')) {
+                    sorted[fvd.relativePath.pathString] = fvd.file.bytes
+                }
+            }
+
+            def md = MessageDigest.getInstance("SHA-256")
+            sorted.each {
+                def name = it.key
+                def bytes = it.value
+                // note: I don't care about possible false positive here, it's impossible with any sane compile output
+                md.update(name.getBytes(StandardCharsets.UTF_8))
+                md.update(bytes)
+            }
+            def digest = md.digest().encodeHex().toString()
+            hashes.add(digest)
+        }
+        if (hashes.size() != 1) {
+            throw new RuntimeException("Jar outputs ${jars} do not have identical classes!")
+        }
+    }
+}
+
+project.subprojects {
+    apply(plugin: 'net.fabricmc.fabric-loom-remap')
+    apply(plugin: 'idea')
+
+    def final MC_VERSION = name.toString().tokenize('_').last()
+    def final MC_VERSION_CATEGORY = parent.name.toString().tokenize('_').last()
+    def final JAVA_VERSION = property("${MC_VERSION_CATEGORY}_java_version").toString()
+
+    getLayout().buildDirectory = "build/${MC_VERSION}"
+
+    logger.lifecycle("Initializing project ${project.path} for ${MC_VERSION} with java version ${JAVA_VERSION}")
+
+    loom {
+        mods {
+            "${modid}" {
+                sourceSet sourceSets.main
+            }
+        }
+        runs {
+            client {
+                name = "Fabric Client ${MC_VERSION}"
+                generateRunConfig = true
+            }
+        }
+    }
+
+    java {
+        withSourcesJar()
+        toolchain.languageVersion = JavaLanguageVersion.of(JAVA_VERSION)
+    }
+
+    dependencies {
+        minecraft "com.mojang:minecraft:$MC_VERSION"
+        mappings loom.officialMojangMappings()
+        modImplementation "net.fabricmc:fabric-loader:$fabric_loader_version"
+        modImplementation "net.fabricmc.fabric-api:fabric-api:${property("${MC_VERSION}_fabric_api")}"
+    }
+
+    processResources {
+        inputs.property "project_version", project_version
+        inputs.property "modid", modid
+        inputs.property "fabric_loader_version", fabric_loader_version
+        inputs.property "${MC_VERSION}_java_version", JAVA_VERSION
+
+        filesMatching("fabric.mod.json") {
+            expand(
+                    "version": project_version,
+                    "modid": modid,
+                    "fabric_loader_version": fabric_loader_version,
+                    "mc_version": MC_VERSION,
+                    "java_version": JAVA_VERSION
+            )
+        }
+    }
+}

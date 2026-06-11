@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "io.github.niko_sk2x.fastflyblockbreaking.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "FFBB"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}

@@ -1,15 +1,76 @@
 pluginManagement {
     repositories {
-        jcenter()
+        gradlePluginPortal()
+        mavenCentral()
         maven {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }
-        gradlePluginPortal()
     }
-
     plugins {
-        id 'fabric-loom' version loom_version
+        id "net.fabricmc.fabric-loom" version "${loom_version}"
+        id "net.fabricmc.fabric-loom-remap" version "${loom_version}"
     }
-
 }
+plugins {
+    id('org.gradle.toolchains.foojay-resolver-convention').version("1.0.0")
+}
+rootProject.name = 'FastFlyBlockBreaking'
+
+logger.lifecycle("NOTE: Running java ${System.getProperty("java.version")} from ${System.getProperty("java.home")}, gradle ${gradle.gradleVersion}")
+
+void loadProjects(loader, versionDirName, mcVersions) {
+    def baseName = ":${loader}_${versionDirName}"
+    include(baseName)
+    project(baseName).projectDir = file("versions/${loader}/${versionDirName}")
+    project(baseName).buildFileName = "build.gradle"
+
+    mcVersions.each {
+        def mcVersion = it
+        def name = ":${loader}_${versionDirName}:${loader}_${mcVersion}"
+        include(name)
+        project(name).projectDir = file("versions/${loader}/${versionDirName}")
+        // note: the file may not necessarily exist if there are no differences from base subprojects(), this is fine
+        project(name).buildFileName = "build_${mcVersion}.gradle"
+    }
+}
+
+loadProjects('fabric', '1.14.x-1.19.x', [
+        '1.14.4', // note: 1.14.x pre-1.14.4 doesn't have official mappings and nobody cares about fabric pre-1.14.4
+        '1.15',
+        '1.16',
+        '1.17',
+        '1.18', '1.18.2',
+        '1.19', '1.19.1', '1.19.2', '1.19.3', '1.19.4',
+])
+
+loadProjects('fabric', '1.20.x-1.21.x', [
+        '1.20', '1.20.1', '1.20.2', '1.20.3', '1.20.4', '1.20.5', '1.20.6',
+        '1.21', '1.21.1', '1.21.2', '1.21.3', '1.21.4', '1.21.5', '1.21.6', '1.21.7', '1.21.8', '1.21.9', '1.21.10', '1.21.11'
+])
+
+loadProjects('fabric', '26.1.x', [
+        '26.1', '26.1.1', '26.1.2'
+])
+
+/*include('versions/fabric/1.16.4') {
+    name = "fabric_1.16.4"
+}
+include('versions/fabric/1.14.4') {
+    name = "fabric_1.14.4"
+}
+include('versions/forge/26.1') {
+    name = "forge_26.1"
+}
+include('versions/forge/1.16.4') {
+    name = "forge_1.16.4"
+}
+include('versions/forge/1.14.4') {
+    name = "forge_1.14.4"
+}
+include('versions/forge/1.12.2') {
+    name = "forge_1.12.2"
+}
+include('versions/neoforge/26.1') {
+    name = "neoforge_26.1"
+}*/

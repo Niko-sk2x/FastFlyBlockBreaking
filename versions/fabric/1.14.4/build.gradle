@@ -1,0 +1,17 @@
+plugins {
+    id 'fabric-loom.gradle.plugin' version '1.17.5'
+}
+
+minecraft {
+    version = '1.14.4'
+    mappings = 'official_1.14.4'
+}
+
+dependencies {
+    modImplementation 'net.fabricmc.fabric-api:fabric-api:0.49.1+1.14.4'
+}
+
+mixin {
+    refmap = 'refmap.json'
+    accessTransformer = 'accessTransformer.json'
+}
