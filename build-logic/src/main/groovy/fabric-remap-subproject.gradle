@@ -6,7 +6,7 @@ def final MC_VERSION = name.toString().tokenize('_').last()
 def final MC_VERSION_CATEGORY = parent.name.toString().tokenize('_').last()
 def final JAVA_VERSION = property("${MC_VERSION_CATEGORY}_java_version").toString()
 
-getLayout().buildDirectory = "build_${MC_VERSION}"
+getLayout().buildDirectory = "build/${MC_VERSION}"
 
 logger.lifecycle("Initializing project ${project.path} for ${MC_VERSION} with java version ${JAVA_VERSION}")
 

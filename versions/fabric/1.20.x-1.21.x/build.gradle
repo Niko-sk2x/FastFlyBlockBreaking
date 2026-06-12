@@ -1,36 +1,3 @@
-import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
-/*
-tasks.register("compareJars") {
-    doLast {
-        def jars = subprojects.collect {
-            it.tasks.named("remapJar").get().archiveFile.get().asFile
-        }
-
-        println("Comparing ${jars.size()} jars")
-        def hashes = new HashSet<String>()
-        jars.each {
-            def sorted = new TreeMap<String, byte[]>()
-            def tree = zipTree(it)
-            tree.visit (FileVisitDetails fvd) -> {
-                if (!fvd.isDirectory() && fvd.name.endsWith('.class')) {
-                    sorted[fvd.relativePath.pathString] = fvd.file.bytes
-                }
-            }
-
-            def md = MessageDigest.getInstance("SHA-256")
-            sorted.each {
-                def name = it.key
-                def bytes = it.value
-                // note: I don't care about possible false positive here, it's impossible with any sane compile output
-                md.update(name.getBytes(StandardCharsets.UTF_8))
-                md.update(bytes)
-            }
-            def digest = md.digest().encodeHex().toString()
-            hashes.add(digest)
-        }
-        if (hashes.size() != 1) {
-            throw new RuntimeException("Jar outputs ${jars} do not have identical classes!")
-        }
-    }
-}*/
+plugins {
+    id 'compare-jars'
+}

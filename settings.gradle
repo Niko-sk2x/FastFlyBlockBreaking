@@ -32,14 +32,14 @@ void loadProjects(loader, versionDirName, mcVersions) {
     }
 }
 
-/*loadProjects('fabric', '1.14.x-1.19.x', [
+loadProjects('fabric', '1.14.x-1.19.x', [
         '1.14.4', // note: 1.14.x pre-1.14.4 doesn't have official mappings and nobody cares about fabric pre-1.14.4
         '1.15',
         '1.16',
         '1.17',
         '1.18', '1.18.2',
         '1.19', '1.19.1', '1.19.2', '1.19.3', '1.19.4',
-])*/
+])
 
 loadProjects('fabric', '1.20.x-1.21.x', [
         '1.20', '1.20.1', '1.20.2', '1.20.3', '1.20.4', '1.20.5', '1.20.6',
@@ -50,6 +50,6 @@ loadProjects('fabric', '26.1.x', [
         '26.1', '26.1.1', '26.1.2'
 ])
 
-/*loadProjects('neoforge', '26.1.x', [
+loadProjects('neoforge', '26.1.x', [
         '26.1.2'
-])*/
+])
